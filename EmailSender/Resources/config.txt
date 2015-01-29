@@ -1,0 +1,7 @@
+root: "C:\ProjetosVSCloud\Akttom\Akttom\EmailAkttom\email.html"
+subject: "teste akttom"
+email: "danilooliveira9@hotmail.com;danilo.goku@gmail.com;doliveira@aksistemas.com.br;"
+smtpserver:"smtp.aksistemas.com.br"
+smtpport:"587"
+username:"teste@aksistemas.com.br"
+password:""
