@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
 using System.Windows;
 
 namespace EmailSender.Helpers
@@ -7,11 +9,7 @@ namespace EmailSender.Helpers
     {
         private MainWindow window = (MainWindow)Application.Current.MainWindow;
 
-        public void Init()
-        {
-            var config = EmailSender.Properties.Resources.config;
-            string[] itens = config.Split("\r\n".ToCharArray(),StringSplitOptions.RemoveEmptyEntries);
-            string root = string.Empty,
+        public string root = string.Empty,
                 subject = string.Empty,
                 email = string.Empty,
                 smtpserver = string.Empty,
@@ -19,37 +17,32 @@ namespace EmailSender.Helpers
                 username = string.Empty,
                 password = string.Empty;
 
-            foreach (var item in itens)
+        public void Init()
+        {
+            var config = EmailSender.Properties.Resources.config;
+            string[] itens = config.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            Type type = assembly.GetType("EmailSender.Helpers.ResourceHelper");
+            MemberInfo[] mi = type.GetMembers();
+            List<FieldInfo> fi = new List<FieldInfo>();
+            foreach (MemberInfo item in mi)
             {
-                if (item.StartsWith("root:"))
+                if (item.MemberType == MemberTypes.Field)
                 {
-                    root = item.Split('"')[1];
-                }
-                else if (item.StartsWith("subject:"))
-                {
-                    subject = item.Split('"')[1];
-                }
-                else if (item.StartsWith("email:"))
-                {
-                    email = item.Split('"')[1];
-                }
-                else if (item.StartsWith("smtpserver:"))
-                {
-                    smtpserver = item.Split('"')[1];
-                }
-                else if (item.StartsWith("smtpport:"))
-                {
-                    smtpport = item.Split('"')[1];
-                }
-                else if (item.StartsWith("username:"))
-                {
-                    username = item.Split('"')[1];
-                }
-                else if (item.StartsWith("password:"))
-                {
-                    password = item.Split('"')[1];
+                    fi.Add((FieldInfo)item);
                 }
             }
+            foreach (var fieldInfo in fi)
+            {
+                foreach (string item in itens)
+                {
+                    if (item.StartsWith(string.Format("{0}:",fieldInfo.Name)))
+                    {
+                        string splitedItem = item.Split('"')[1];
+                        fieldInfo.SetValue(this, splitedItem); 
+                    }
+                }
+            }            
 
             window.txtEmail.Text = email;
             window.txtDiretorio.Text = root;
@@ -57,6 +50,7 @@ namespace EmailSender.Helpers
             window.SmtpServer = smtpserver;
             window.SmtpPort = int.Parse(smtpport);
             window.UserName = username;
+            window.From = username;
             window.Password = password;
         }
     }
